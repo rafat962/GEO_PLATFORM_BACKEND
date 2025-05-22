@@ -1,0 +1,18 @@
+extends baseEmail
+
+block content
+    p Hi #{firstName},
+    p Welcome to FoodieDelights! 🍔🍰 We're thrilled to have you on board.
+    p Get ready to embark on a culinary journey with the finest food products just a click away.
+    table.btn.btn-primary(role='presentation', border='0', cellpadding='0', cellspacing='0')
+        tbody
+            tr
+                td(align='left')
+                    table(role='presentation', border='0', cellpadding='0', cellspacing='0')
+                        tbody
+                            tr
+                                td
+                                    a(href=`${url}`, target='_blank') Explore our delicious offerings
+    p Whether you're a food enthusiast or just looking to spice up your meals, we've got something for everyone.
+    p If you have any questions or need assistance, feel free to reach out. We're here to make your foodie experience extraordinary!
+    p - The FoodieDelights Team

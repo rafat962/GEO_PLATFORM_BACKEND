@@ -1,0 +1,4 @@
+app is lisining on Host \\.\pipe\0470c4c2-41bc-4271-8e15-c45fb8330e0b
+DB connection successfully
+admin
+Total users in DB: 3

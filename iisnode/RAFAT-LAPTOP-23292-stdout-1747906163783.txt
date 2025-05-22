@@ -1,0 +1,17 @@
+app is lisining on Host \\.\pipe\4bfc68e3-2386-4482-9cd2-9d5b74258148
+DB connection successfully
+admin
+admin
+2
+INVALID OTP
+2
+INVALID OTP
+admin
+Total users in DB: 5
+Total users in DB: 5
+admin
+Total users in DB: 5
+Total users in DB: 5
+Total users in DB: 5
+Total users in DB: 5
+admin
