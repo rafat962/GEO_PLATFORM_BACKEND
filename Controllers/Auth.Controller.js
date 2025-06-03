@@ -370,6 +370,7 @@ exports.verfyToken = async (req, res, next) => {
                     name: user.name,
                     email: user.email,
                     photo: user.photo,
+                    role: user.role,
                 },
             });
         }

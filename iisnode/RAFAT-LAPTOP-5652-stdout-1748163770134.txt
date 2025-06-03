@@ -1,0 +1,2 @@
+app is lisining on Host \\.\pipe\990c7afa-80c0-4f1e-9389-b870b00c5fc0
+DB connection successfully
