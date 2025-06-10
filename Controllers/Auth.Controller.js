@@ -94,7 +94,6 @@ exports.login = async (req, res, next) => {
         await user.updateOne({ $push: { loginLogs: new Date() } });
         res.locals.user = user;
         const token = await sign(user, res);
-        console.log(user.role);
         res.status(200).json({
             status: "success",
             token,
@@ -145,7 +144,6 @@ exports.signUp = async (req, res, next) => {
         const CurrenUser = await User.findOne({
             email: req.body.email,
         });
-        // console.log(CurrenUser);
         if (CurrenUser) {
             throw "Email already Taken, please chose another email";
         }
@@ -299,7 +297,6 @@ exports.updatePassword = async (req, res, next) => {
             token,
         });
     } catch (err) {
-        console.log(err);
         res.status(404).json({
             status: "error",
             message: err || "Error When Updateing Password",
@@ -371,11 +368,11 @@ exports.verfyToken = async (req, res, next) => {
                     email: user.email,
                     photo: user.photo,
                     role: user.role,
+                    permissions: user.permissions,
                 },
             });
         }
     } catch (err) {
-        console.log(err);
         res.status(400).json({
             status: "fail",
             message: err,
@@ -400,8 +397,6 @@ exports.active = async (req, res, next) => {
             });
         }
     } catch (err) {
-        console.log(2);
-        console.log(err);
         res.status(404).json({
             status: "error",
             message: err,

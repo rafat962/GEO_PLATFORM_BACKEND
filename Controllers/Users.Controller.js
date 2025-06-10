@@ -14,7 +14,6 @@ exports.getPendingUsers = async (req, res, next) => {
 exports.getAllUsers = async (req, res, next) => {
     try {
         const users = await User.find();
-        console.log("Total users in DB:", users.length);
         res.status(200).json(users);
     } catch (err) {
         res.status(404).json({
@@ -67,7 +66,6 @@ exports.rejectUser = async (req, res, next) => {
 exports.deActiviteUser = async (req, res, next) => {
     try {
         const UserId = req.params.userId;
-        console.log(UserId);
         const user = await User.findByIdAndUpdate(UserId, {
             active: false,
         });
@@ -92,11 +90,54 @@ exports.ActiviteUser = async (req, res, next) => {
         });
         const url2 = `http://localhost:5173/auth/login`;
         await new Email(user, url2).sendWelcome();
-        console.log("done");
         res.status(200).json({
             status: "success",
             message: "User has been deActivited successfully",
         });
+    } catch (err) {
+        res.status(404).json({
+            status: "error",
+            message: err || "",
+        });
+    }
+};
+//------------------- getUserLogs -------------------
+
+exports.getUserLogs = async (req, res, next) => {
+    try {
+        const userId = req.params.id;
+        const userData = await User.findById(userId).select("loginLogs");
+        res.status(200).json(userData);
+    } catch (err) {
+        res.status(404).json({
+            status: "error",
+            message: err || "",
+        });
+    }
+};
+//------------------- Set Permissions -------------------
+
+exports.setPermissions = async (req, res, next) => {
+    try {
+        const userId = req.params.id;
+        const permissions = req.body.permissions;
+        const userData = await User.findByIdAndUpdate(userId, { permissions });
+        res.status(200).json(userData);
+    } catch (err) {
+        res.status(404).json({
+            status: "error",
+            message: err || "",
+        });
+    }
+};
+//------------------- getPermissions -------------------
+
+exports.getPermissions = async (req, res, next) => {
+    try {
+        const userId = req.params.id;
+        const userData = await User.findById(userId).select("permissions");
+        console.log(userData);
+        res.status(200).json(userData);
     } catch (err) {
         res.status(404).json({
             status: "error",
