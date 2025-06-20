@@ -136,7 +136,6 @@ exports.getPermissions = async (req, res, next) => {
     try {
         const userId = req.params.id;
         const userData = await User.findById(userId).select("permissions");
-        console.log(userData);
         res.status(200).json(userData);
     } catch (err) {
         res.status(404).json({
