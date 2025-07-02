@@ -426,6 +426,7 @@ exports.updateUser = async (req, res, next) => {
                 "users",
                 user.photo
             );
+            console.log(oldPhotoPath)
             if (fs.existsSync(oldPhotoPath)) {
                 fs.unlinkSync(oldPhotoPath); // delete the old file
             }
