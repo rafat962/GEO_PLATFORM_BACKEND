@@ -60,6 +60,8 @@ exports.protect = async (req, res, next) => {
 exports.login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
+        const users = await User.find();
+        console.log(users);
         // ------ Check if user exsist
         const user = await User.findOne({ email: email }).select([
             "name",
