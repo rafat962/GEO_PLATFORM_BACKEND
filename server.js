@@ -3,7 +3,7 @@ const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 dotenv.config({ path: `./config.env` });
 
-mongoose.connect(process.env.DBDEV).then(() => {
+mongoose.connect(process.env.DB).then(() => {
     console.log("DB connection successfully");
 });
 
