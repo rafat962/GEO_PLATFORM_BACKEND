@@ -5,6 +5,7 @@ const cors = require("cors");
 const authRoutes = require("./Routes/Auth.Route");
 const userRoutes = require("./Routes/Users.Route");
 const featureRoutes = require("./Routes/Feature.Route");
+const AIRoutes = require("./Routes/ChatBot.Route");
 //--------------------------- configurations ---------------------------
 app.use(cors());
 app.use(express.json());
@@ -16,6 +17,7 @@ app.set("views", path.join(__dirname, "views"));
 app.use("/api/v1/users", authRoutes);
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/feature", featureRoutes);
+app.use("/api/v1/ai", AIRoutes);
 
 // app.use("*", (req, res, next) => {
 //     res.status(400).json({

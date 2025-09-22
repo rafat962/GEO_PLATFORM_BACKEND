@@ -61,7 +61,6 @@ exports.login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
         const users = await User.find();
-        console.log(users);
         // ------ Check if user exsist
         const user = await User.findOne({ email: email }).select([
             "name",
@@ -428,7 +427,6 @@ exports.updateUser = async (req, res, next) => {
                 "users",
                 user.photo
             );
-            console.log(oldPhotoPath)
             if (fs.existsSync(oldPhotoPath)) {
                 fs.unlinkSync(oldPhotoPath); // delete the old file
             }
