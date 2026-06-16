@@ -59,6 +59,7 @@ exports.protect = async (req, res, next) => {
 
 exports.login = async (req, res, next) => {
     try {
+        console.log("start");
         const { email, password } = req.body;
         const users = await User.find();
         // ------ Check if user exsist
@@ -85,7 +86,7 @@ exports.login = async (req, res, next) => {
         // ------ Check if Password Correct
         const passwordCheck = await user.correctPasswordCompare(
             password,
-            user.password
+            user.password,
         );
         if (!passwordCheck) {
             throw "INVALID PASSWORD";
@@ -238,7 +239,7 @@ exports.resetPassword2 = async (req, res, next) => {
         const token = req.params.token;
         if (!token) throw "you should enter your token";
         const user = await User.findOne({ resetPasswordToken: token }).select(
-            "password"
+            "password",
         );
         if (!user) throw "INVALID PASSWORD";
         if (!req.body.password) {
@@ -275,7 +276,7 @@ exports.updatePassword = async (req, res, next) => {
         // ------ Check if Password Correct
         const passwordCheck = await user.correctPasswordCompare(
             req.body.pastPassword,
-            user.password
+            user.password,
         );
         if (!passwordCheck) {
             throw "Invalid Password";
@@ -425,7 +426,7 @@ exports.updateUser = async (req, res, next) => {
                 "..",
                 "public",
                 "users",
-                user.photo
+                user.photo,
             );
             if (fs.existsSync(oldPhotoPath)) {
                 fs.unlinkSync(oldPhotoPath); // delete the old file
@@ -470,7 +471,7 @@ exports.deleteImage = async (req, res, next) => {
             "..",
             "public",
             "users",
-            user.photo
+            user.photo,
         );
         if (fs.existsSync(oldPhotoPath)) {
             fs.unlinkSync(oldPhotoPath); // delete the old file
