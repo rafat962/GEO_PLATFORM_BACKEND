@@ -1,22 +1,12 @@
-// Controllers/Chat/services/chat.service.js
-const {
-    createCalculatorTool,
-} = require("../services/langchain/tools/calculator.tool");
-const {
-    createDatetimeTool,
-} = require("../services/langchain/tools/datetime.tool");
 const { ChatGoogleGenerativeAI } = require("@langchain/google-genai");
-
-const {
-    HumanMessage,
-    AIMessage,
-    ToolMessage,
-} = require("@langchain/core/messages");
+const { MongoDBSaver } = require("@langchain/langgraph-checkpoint-mongodb");
+const { HumanMessage, ToolMessage } = require("@langchain/core/messages");
 const { createReactAgent } = require("@langchain/langgraph/prebuilt");
+const { MongoClient } = require("mongodb");
 const dotenv = require("dotenv");
+
 const { createLayerSchemaTool } = require("./langchain/Esri/GetSchema.tool");
 const { createQueryLayerTool } = require("./langchain/Esri/queryLayer.tool");
-const { createRagTool } = require("./langchain/tools/rag.tool");
 const {
     createRegulationsRagTool,
 } = require("./langchain/Esri/regulations_rag.tool");
@@ -63,17 +53,14 @@ FORMATTING GUIDELINES (CRITICAL FOR UI RENDERING):
 FINAL RULE:
 Never output raw JSON features in your text message. Output only conversational text.
 `;
-const sessionStore = new Map();
+
 const LAYER_URL =
     "https://services3.arcgis.com/UDCw00RKDRKPqASe/arcgis/rest/services/Buildings_langchain/FeatureServer/0";
-// Initialize tools and model once outside the request handler
+
 const tools = [
-    // createCalculatorTool(DynamicStructuredTool, z),
-    // createDatetimeTool(DynamicStructuredTool, z),
     createRegulationsRagTool(),
     createLayerSchemaTool(LAYER_URL),
     createQueryLayerTool(LAYER_URL),
-    // createRagTool(),
 ];
 
 const model = new ChatGoogleGenerativeAI({
@@ -82,44 +69,65 @@ const model = new ChatGoogleGenerativeAI({
     temperature: 0.3,
 });
 
-// Create the agent once
-const agent = createReactAgent({
-    llm: model,
-    tools,
-    messageModifier: systemPrompt,
-    // responseFormat: "content_and_artifact",
-});
+let agentInstance = null;
+let mongoClientInstance = null;
 
-const getHistory = (sessionId) => {
-    if (!sessionStore.has(sessionId)) sessionStore.set(sessionId, []);
-    return sessionStore.get(sessionId);
+const getAgent = async () => {
+    if (agentInstance) return agentInstance;
+
+    const connectionString =
+        process.env.DB || "mongodb://127.0.0.1:27017/geoai_db";
+
+    mongoClientInstance = new MongoClient(connectionString);
+    await mongoClientInstance.connect();
+
+    if (typeof mongoClientInstance.appendMetadata !== "function") {
+        mongoClientInstance.appendMetadata = function () {
+            return this;
+        };
+    }
+
+    const checkpointer = new MongoDBSaver({ client: mongoClientInstance });
+
+    agentInstance = createReactAgent({
+        llm: model,
+        tools,
+        messageModifier: systemPrompt,
+        checkpointSaver: checkpointer,
+    });
+
+    return agentInstance;
 };
 
 const runChat = async ({ sessionId, message }) => {
-    const history = getHistory(sessionId);
-
     try {
-        const limitedHistory = history.slice(-20);
+        const agent = await getAgent();
 
-        const result = await agent.invoke({
-            messages: [...limitedHistory, new HumanMessage(message)],
-        });
+        const config = {
+            configurable: {
+                thread_id: sessionId || "default_session",
+            },
+        };
 
-        const inputCount = limitedHistory.length + 1;
-        const newMessages = result.messages.slice(inputCount);
+        const result = await agent.invoke(
+            {
+                messages: [new HumanMessage(message)],
+            },
+            config,
+        );
 
-        // لقط أي artifact من أي tool استخدم content_and_artifact
-        const toolResults = newMessages
+        const totalMessages = result.messages;
+
+        const toolResults = totalMessages
             .filter((m) => m instanceof ToolMessage && m.artifact !== undefined)
             .map((m) => ({
                 tool: m.name,
                 data: m.artifact,
             }));
 
-        const lastMessage = result.messages[result.messages.length - 1];
+        const lastMessage = totalMessages[totalMessages.length - 1];
         let replyText = lastMessage.content;
 
-        // بعض الموديلات (Gemini) ممكن ترجع content كـ array من parts
         if (Array.isArray(replyText)) {
             replyText = replyText
                 .map((part) =>
@@ -127,12 +135,10 @@ const runChat = async ({ sessionId, message }) => {
                 )
                 .join("");
         }
-        history.push(new HumanMessage(message));
-        history.push(new AIMessage(replyText));
 
         return {
             reply: replyText,
-            toolResults, // [{ tool: "query_layer_data", data: { features, executedQuery, ... } }]
+            toolResults,
         };
     } catch (err) {
         console.error("Gemini invoke error:", err);
